@@ -60,8 +60,47 @@ void ADSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADSCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &ADSCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ADSCharacter::LookUp);
+	PlayerInputComponent->BindAction("ChangeLeft",IE_Pressed,this,&ADSCharacter::ChangeL);
+	PlayerInputComponent->BindAction("ChangeLeft",IE_Released,this,&ADSCharacter::UChangeL);
 	PlayerInputComponent->BindAction("ToggleCameraLock", IE_Pressed, CameraLockArm, &ULockOnArmComponent::ToggleCameraLock);
 	PlayerInputComponent->BindAction("ToggleSoftLock", IE_Pressed, CameraLockArm, &ULockOnArmComponent::ToggleSoftLock);
+}	
+
+void ADSCharacter::ChangeL()
+{
+	IsChangeTarget = true;
+	float TimeSinceLastTargetSwitch = GetWorld()->GetRealTimeSeconds() - LastTargetSwitchTime;
+	//Lock On 시
+	if (CameraLockArm->IsCameraLockedToTarget())
+	{
+		// Soft Lock On 상태일때 타깃 변경
+		if (CameraLockArm->bUseSoftLock && IsChangeTarget)
+		{
+			CameraLockArm->BreakTargetLock();
+			BrokeLockTime = GetWorld()->GetRealTimeSeconds(); // 쿨다운을 위한 시간 저장
+			CameraLockArm->bSoftlockRequiresReset = true; // 소프트락 재설정 여부 true 
+		}
+		// Soft Lock Off 상태일때
+		else if (IsChangeTarget && TimeSinceLastTargetSwitch > TargetSwitchMinDelaySeconds)
+		{
+			CameraLockArm->SwitchTarget(EDirection::Left);
+		}
+			LastTargetSwitchTime = GetWorld()->GetRealTimeSeconds(); // 스위칭 쿨타임 위한 시간 저장
+	}
+	else
+	{
+		// If camera lock was recently broken by a large mouse delta, allow a cooldown time to prevent erratic camera movement
+		bool bRecentlyBrokeLock = (GetWorld()->GetRealTimeSeconds() - BrokeLockTime) < BrokeLockAimingCooldown;
+		if (!bRecentlyBrokeLock)
+		{
+			
+		}
+	}
+}
+
+void ADSCharacter::UChangeL()
+{
+	IsChangeTarget = false;
 }
 
 // 전후 입력 LockOn / LockOff 구분
@@ -132,6 +171,8 @@ void ADSCharacter::LookUp(float Val)
 	if (!CameraLockArm->IsCameraLockedToTarget())
 		AddControllerPitchInput(Val);
 }
+
+
 
 // Lock On 시 카메라 제어
 void ADSCharacter::TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction)

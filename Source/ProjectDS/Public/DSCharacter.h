@@ -65,8 +65,14 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float Val);
 	void LookUp(float Val);
+	void ChangeL();
+	void UChangeL();
 
+	bool IsChangeTarget;
+	
 	/** 매 프레임 마다 갱신위해 함수 호출 */
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	
 };
+
+
