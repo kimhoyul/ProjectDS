@@ -6,107 +6,67 @@
 #include "GameFramework/Character.h"
 #include "DSCharacter.generated.h"
 
-UCLASS(config=Game)
+UCLASS()
 class PROJECTDS_API ADSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/* LockArmComponent ÄÄÆÛ³ÍÆ® ¼±¾ğ */
+	/* LockArmComponent ì»´í¼ë„ŒíŠ¸ ì„ ì–¸ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class ULockOnArmComponent* CameraLockArm;
 
-	/* Follow camera ¼±¾ğ */
+	/* Follow camera ì„ ì–¸ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	/*Camera Lock On System À» À§ÇØ TargetComponent ¼±¾ğ */
+	/*Camera Lock On System ì„ ìœ„í•´ TargetComponent ì„ ì–¸ */
 	class ULockOnTargetComponent* TargetComponent;
 
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////
-	// ¾Æ³¯·Î±×½ºÆ½
+	// í‚¤ë³´ë“œ & ë§ˆìš°ìŠ¤
 
-	/** ¾Æ³¯·Î±×½ºÆ½ XÃà ÀÔ·Â°ª º¯¼ö ¼±¾ğ */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lock On Camera")
-	float BaseTurnRate;
+	/** LockOn ì‹œ ì¹´ë©”ë¼ ì´ë™ì†ë„ ì¡°ì ˆ */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lock On Camera")
+	float LockOnControlRotationRate;;
 
-	/** ¾Æ³¯·Î±×½ºÆ½ YÃà ÀÔ·Â°ª º¯¼ö ¼±¾ğ */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lock On Camera")
-	float BaseLookUpRate;
-
-	/* ´ë»óÀ» ÀüÈ¯ÇÏ±â À§ÇØ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¾Æ³¯·Î±×½ºÆ½ ¿òÁ÷ÀÓ°ª º¯¼ö ¼±¾ğ */
-	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
-	float TargetSwitchAnalogValue;
-
-	/* ´ë»ó ÀüÈ¯ ÀÌÈÄ ¾Æ³¯·Î±× ½ºÆ½ÀÌ Áß¸³À¸·Î µ¹¾Æ °¬´ÂÁö ¿©ºÎ º¯¼ö ¼±¾ğ */
-	bool bAnalogSettledSinceLastTargetSwitch;
-
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	// Å°º¸µå & ¸¶¿ì½º
-
-	/** LockOn ½Ã Ä«¸Ş¶ó ÀÌµ¿¼Óµµ Á¶Àı º¯¼ö ¼±¾ğ*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lock On Camera")
-	float LockonControlRotationRate;;
-
-	/* Soft Lock Off »óÅÂ¿¡¼­ ´ë»óÀ» ÀüÈ¯ÇÏ±â À§ÇØ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¸¶¿ì½º ¿òÁ÷ÀÓ°ª º¯¼ö ¼±¾ğ*/
+	/* Soft Lock Off ìƒíƒœì—ì„œ ëŒ€ìƒì„ ì „í™˜í•˜ê¸° ìœ„í•´ ì…ë ¥ìœ¼ë¡œ ê°„ì£¼ë˜ëŠ” ë§ˆìš°ìŠ¤ ì›€ì§ì„ê°’ */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	float TargetSwitchMouseDelta;
 
-	/* Soft Lock Off »óÅÂ¿¡¼­ ´ë»ó ÀüÈ¯ delay º¯¼ö ¼±¾ğ. Lock On SystemÀÇ Á¦¾î¼ºÀ» ³ôÀÌ±â À§ÇØ »ç¿ë */
+	/* Soft Lock Off ìƒíƒœì—ì„œ ëŒ€ìƒ ì „í™˜ delay. Lock On Systemì˜ ì œì–´ì„±ì„ ë†’ì´ê¸° ìœ„í•´ ì‚¬ìš© */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	float TargetSwitchMinDelaySeconds;
 
-	/* Soft Lock Off »óÅÂ¿¡¼­ ´ë»ó ÀüÈ¯ delay À§ÇØ ¸¶Áö¸· ´ë»ó ÀüÈ¯ ½Ã°£ ÀúÀå º¯¼ö ¼±¾ğ */
+	/* Soft Lock Off ìƒíƒœì—ì„œ ëŒ€ìƒ ì „í™˜ delay ìœ„í•´ ë§ˆì§€ë§‰ ëŒ€ìƒ ì „í™˜ ì‹œê°„ ì €ì¥ */
 	UPROPERTY(BlueprintReadOnly, Category = "Lock On Camera")
 	float LastTargetSwitchTime;
 
-	/* Soft Lock On »óÅÂ¿¡¼­ ´ë»óÀ» ÀüÈ¯ÇÏ±â À§ÇØ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¸¶¿ì½º ¿òÁ÷ÀÓ°ª º¯¼ö ¼±¾ğ */
+	/* Soft Lock On ìƒíƒœì—ì„œ ëŒ€ìƒì„ ì „í™˜í•˜ê¸° ìœ„í•´ ì…ë ¥ìœ¼ë¡œ ê°„ì£¼ë˜ëŠ” ë§ˆìš°ìŠ¤ ì›€ì§ì„ê°’ */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	float BreakLockMouseDelta;
 
-	/* Soft Lock On »óÅÂ¿¡¼­ ´ë»ó ÀüÈ¯ delay º¯¼ö ¼±¾ğ. Lock On SystemÀÇ Á¦¾î¼ºÀ» ³ôÀÌ±â À§ÇØ »ç¿ë */
+	/* Soft Lock On ìƒíƒœì—ì„œ ëŒ€ìƒ ì „í™˜ delay Lock On Systemì˜ ì œì–´ì„±ì„ ë†’ì´ê¸° ìœ„í•´ ì‚¬ìš© */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	float BrokeLockAimingCooldown;
 
-	/* Soft Lock On »óÅÂ¿¡¼­ ´ë»ó ÀüÈ¯ delay À§ÇØ ¸¶Áö¸· ´ë»ó ÀüÈ¯ ½Ã°£ ÀúÀå º¯¼ö ¼±¾ğ */
+	/* Soft Lock On ìƒíƒœì—ì„œ ëŒ€ìƒ ì „í™˜ delay ìœ„í•´ ë§ˆì§€ë§‰ ëŒ€ìƒ ì „í™˜ ì‹œê°„ ì €ì¥ */
 	float BrokeLockTime;
 
 public:
 	// Sets default values for this character's properties
 	ADSCharacter();
-
-
-
+	
 protected:
-	// ÀÔ·Â¿¡ ¸ÂÃç ±â´ÉÀ» ¹ÙÀÎµùÇÏ±â À§ÇØ È£Ãâ
+	/** ì…ë ¥ì— ë§ì¶° ê¸°ëŠ¥ì„ ë°”ì¸ë”©í•˜ê¸° ìœ„í•´ í˜¸ì¶œ */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	/** Å°º¸µå W / S (ÀüÈÄ) ÀÌµ¿ ÀÔ·Â ÇÔ¼ö ¼±¾ğ*/
 	void MoveForward(float Value);
-	
-	/** Å°º¸µå A / D (ÁÂ¿ì) ÀÌµ¿ ÀÔ·Â ÇÔ¼ö ¼±¾ğ*/
 	void MoveRight(float Value);
-
-	/* ¸¶¿ì½º XÃà ÀÔ·Â ÇÔ¼ö ¼±¾ğ */
 	void Turn(float Val);
-	
-	/* ¸¶¿ì½º YÃà ÀÔ·Â ÇÔ¼ö ¼±¾ğ */
 	void LookUp(float Val);
 
-	/* ¾Æ³¯·Î±×½ºÆ½ XÃà ÀÔ·Â ÇÔ¼ö ¼±¾ğ */
-	void TurnAtRate(float Rate);
-
-	/* ¾Æ³¯·Î±×½ºÆ½ YÃà ÀÔ·Â ÇÔ¼ö ¼±¾ğ */
-	void LookUpAtRate(float Rate);
-
-	/* ¸Å ÇÁ·¹ÀÓ ¸¶´Ù °»½ÅÀ§ÇØ ÇÔ¼ö È£Ãâ */
+	/** ë§¤ í”„ë ˆì„ ë§ˆë‹¤ ê°±ì‹ ìœ„í•´ í•¨ìˆ˜ í˜¸ì¶œ */
 	virtual void TickActor(float DeltaTime, enum ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	
-public:	
-	/** Returns CameraBoom subobject **/
-	UFUNCTION(BlueprintCallable, Category = "Lock On Camera")
-		FORCEINLINE class ULockOnArmComponent* GetCameraBoom() const { return CameraLockArm; }
-	/** Returns FollowCamera subobject **/
-	UFUNCTION(BlueprintCallable, Category = "Lock On Camera")
-		FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };

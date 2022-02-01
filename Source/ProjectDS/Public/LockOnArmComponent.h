@@ -24,27 +24,26 @@ class PROJECTDS_API ULockOnArmComponent : public USpringArmComponent
 	GENERATED_BODY()
 
 public:
-	/* Å¸°ÙÆÃ ÃÖÀå °Å¸® ¼³Á¤ º¯¼ö ¼±¾ğ */
+	/** íƒ€ê²ŸíŒ… ìµœì¥ ê±°ë¦¬ ì„¤ì •  */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	float MaxTargetLockDistance;
-
-	/* Soft Lock »ç¿ë ¿©ºÎ º¯¼ö ¼±¾ğ */
+	
+	/** Soft Lock ì‚¬ìš© ì—¬ë¶€ */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	bool bUseSoftLock;
 
-
-	/* µğ¹ö±×¼± º¸ÀÏÁö ¿©ºÎ º¯¼ö ¼±¾ğ */
+	/** ë””ë²„ê·¸ì„  ë³´ì¼ì§€ ì—¬ë¶€ */
 	UPROPERTY(EditDefaultsOnly, Category = "Lock On Camera")
 	bool bDrawDebug;
 
-	/* ¼ÒÇÁÆ®¶ô ÇØÁ¦ÈÄ µô·¹ÀÌ¸¦ À§ÇÑ º¯¼ö ¼±¾ğ */
+	/** ì†Œí”„íŠ¸ë½ í•´ì œí›„ ë”œë ˆì´ */
 	bool bSoftlockRequiresReset;
 
-	/* ¶ô¿ÂÇÑ ´ë»óÀ» ³Ö¾îÁÖ´Â ÄÄÆ÷³ÍÆ® Å¬·¡½º »ı¼º */
+	/** ë½ì˜¨í•œ ëŒ€ìƒì„ ë„£ì–´ì£¼ëŠ” ì»´í¬ë„ŒíŠ¸ í´ë˜ìŠ¤ ìƒì„± */
 	UPROPERTY(BlueprintReadOnly)
 	class ULockOnTargetComponent* CameraTarget;
 
-	//»ı¼ºÀÚ
+	//ìƒì„±ì
 	ULockOnArmComponent();
 	
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -57,7 +56,7 @@ public:
 	void SwitchTarget(EDirection SwitchDirection);
 	TArray<class ULockOnTargetComponent*> GetTargetComponents();
 
-	/* True if the camera is currently locked to a target */
+	/* ì¹´ë©”ë¼ê°€ í˜„ì¬ Lock On ìƒíƒœì´ë©´ true*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Lock On Camera")
 	bool IsCameraLockedToTarget();
 };

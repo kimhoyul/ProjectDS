@@ -2,14 +2,11 @@
 
 
 #include "DSCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "DrawDebugHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "LockOnTargetComponent.h"
 #include "LockOnArmComponent.h"
@@ -18,133 +15,106 @@
 // ADSCharacter
 ADSCharacter::ADSCharacter()
 {
-	/* Lock On ¼³Á¤ */
-	LockonControlRotationRate = 10.f;	// Lock On ½Ã ´ë»ó¿¡°Ô ÀÌµ¿ ÇÏ´Â Ä«¸Ş¶óÀÇ ¼Óµµ¸¦ Á¶Àı												(Default 10.f)
-	//Soft Lock Off
-	TargetSwitchMouseDelta = 3.f;		// Lock On ´ë»óÀ» ÀüÈ¯ÇÏ±â À§ÇÑ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¸¶¿ì½º ¿òÁ÷ÀÓ¿¡ ´ëÇÑ Çã¿ëÄ¡¸¦ Á¶Àı				(Default 3.f)
-	TargetSwitchMinDelaySeconds = .5f;	// Lock On ´ë»ó ÀüÈ¯ delay. Lock On SystemÀÇ Á¦¾î¼ºÀ» ³ôÀÌ±â À§ÇØ »ç¿ë								(Default .5f)
-	//Soft Lock On
-	BreakLockMouseDelta = 10.f;			// Lock On À» ÇØÁ¦ÇÏ±â À§ÇÑ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¸¶¿ì½ºÀÇ ¿òÁ÷ÀÓ¿¡ ´ëÇÑ ÀúÇ×							(Default 10.f)
-	BrokeLockAimingCooldown = .5f;		// ¸¶¿ì½º ¿òÁ÷ÀÓÀ¸·Î Lock On ´ë»ó ÀüÈ¯ÈÄ ÇÃ·¹ÀÌ¾îÀÇ Ä«¸Ş¶ó ÀÔ·Â delay.								(Default .5f)
-
-	// Gameped ¾Æ³¯·Î±× ½ºÆ½
-	TargetSwitchAnalogValue = .8f;		// Lock On ´ë»óÀ» ÀüÈ¯ÇÏ±â À§ÇÑ ÀÔ·ÂÀ¸·Î °£ÁÖµÇ´Â ¾Æ³¯·Î±× ½ºÆ½ ¿òÁ÷ÀÓ¿¡ ´ëÇÑ Çã¿ëÄ¡¸¦ Á¶Àı			(Default .8f)
-	BaseTurnRate = 45.f;				// Gameped ¾Æ³¯·Î±× ½ºÆ½ XÃà ¹æÇâÀÇ Base turn rate													(Default 45.f)
-	BaseLookUpRate = 45.f;				// Gameped ¾Æ³¯·Î±× ½ºÆ½ YÃà ¹æÇâÀÇ LookUp Rate														(Default 45.f)
-
-	// Ä³¸¯ÅÍ Ä¸½¶ ÄÄÆ÷³ÍÆ® »çÀÌÁî (Default 34.f, 88.f)
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-
-	// ÄÁÆ®·Ñ·¯ÀÇ Pitch, Yaw, Roll °ª »ç¿ëÇÏÁö ¾Ê±â. Ä«¸Ş¶ó¿¡¸¸ ¿µÇâÀ» ¹ÌÄ¡°Ô ¼³Á¤.
+	
+	/* Lock On ì„¤ì • */
+	LockOnControlRotationRate = 10.f;	
+	//Soft Lock Off
+	TargetSwitchMouseDelta = 3.f;		
+	TargetSwitchMinDelaySeconds = .5f;	
+	//Soft Lock On
+	BreakLockMouseDelta = 10.f;			
+	BrokeLockAimingCooldown = .5f;	
+	
+	// ì»¨íŠ¸ë¡¤ëŸ¬ì˜ Pitch, Yaw, Roll ê°’ ì‚¬ìš©í•˜ì§€ ì•Šê¸°. ì¹´ë©”ë¼ì—ë§Œ ì˜í–¥ì„ ë¯¸ì¹˜ê²Œ ì„¤ì •.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Ä³¸¯ÅÍ ÀÌµ¿ ¼³Á¤
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Ä³¸¯ÅÍÀÇ ÀÌµ¿¹æÇâÀ» ¼³Á¤ÇÑ´Ù...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...¿©±â¼­ ¼³Á¤ÇÑ È¸Àü ¼Óµµ·Î									(Default 0.f,540.f,0.f)
-	GetCharacterMovement()->JumpZVelocity = 600.f;  // Ä³¸¯ÅÍÀÇ Á¡ÇÁ ³ôÀÌ																	(Default 600.f)
-	GetCharacterMovement()->AirControl = 0.0f; // Ä³¸¯ÅÍ°¡ °øÁß¿¡ ÀÖÀ»¶§ ¿òÁ÷ÀÏ¼ö ÀÖ´Â °ª ¼³Á¤												(Default 0.2f)
+	// ìºë¦­í„° ì´ë™ ì„¤ì •
+	GetCharacterMovement()->bOrientRotationToMovement = true; 	
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); 
+	GetCharacterMovement()->JumpZVelocity = 600.f;  
+	GetCharacterMovement()->AirControl = 0.0f; 
+	
+	// Spring Arm ìƒì„±
+	CameraLockArm = CreateDefaultSubobject<ULockOnArmComponent>(TEXT("CameraLockArm")); 
+	CameraLockArm->SetupAttachment(RootComponent);
+	CameraLockArm->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
 
+	// Follo Camera ìƒì„±
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraLockArm, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false; 
 
-	// Spring Arm »ı¼º(Ä«¸Ş¶ó¸¦ Block ÇÏ´Â Äİ¸®Àü°ú Ãæµ¹ ÇßÀ» °æ¿ì ÇÃ·¹ÀÌ¾î ÂÊÀ¸·Î ²ø¾î´ç±ä´Ù).
-	CameraLockArm = CreateDefaultSubobject<ULockOnArmComponent>(TEXT("CameraLockArm")); // ÄÄÆÛ³ÍÆ® Ãß°¡ CameraLockArm À¸·Î ÀÌ¸§ ¼³Á¤
-	CameraLockArm->SetupAttachment(RootComponent); // ÄÄÆÛ³ÍÆ®ÀÇ À§Ä¡´Â "RootComponent"ÀÇ ÇÏÀ§·Î
-	CameraLockArm->SetRelativeLocation(FVector(0.f, 0.f, 50.f)); // ÀÌ Ä³¸¯ÅÍÀÇ ÄÄÆÛ³ÍÆ® Æ®·£½ºÆû °ªÁß ·ÎÄÉÀÌ¼Ç °ªÀ» ¼³Á¤
-
-	// Follo Camera »ı¼º
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera")); // ÄÄÆÛ³ÍÆ® Ãß°¡ FollowCamera ·Î ÀÌ¸§ ¼³Á¤
-	FollowCamera->SetupAttachment(CameraLockArm, USpringArmComponent::SocketName); // Ä«¸Ş¶ó¸¦ Spring Arm ³¡¿¡ ´Ş¾Æ ÄÁÆ®·Ñ·¯ÀÇ ¹æÇâ¿¡ ¸ÂÃß¾î Spring ArmÀ» Á¶Á¤
-	FollowCamera->bUsePawnControlRotation = false; // Ä«¸Ş¶ó°¡ Spring Arm À» ±âÁØÀ¸·Î È¸ÀüÇÏÁö ¾Êµµ·Ï ¼³Á¤
-
-	// target component »ı¼º (Lock On À» À§ÇÑ ¹Ù¿îµå)
+	// target component ìƒì„±
 	TargetComponent = CreateDefaultSubobject<ULockOnTargetComponent>(TEXT("TargetComponent"));
 	TargetComponent->SetupAttachment(GetRootComponent());
-
 }
-
 // Called to bind functionality to input
 void ADSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	// °ÔÀÓÇÃ·¹ÀÌ Å° ¹ÙÀÎµù
-
-	/* PlayerInputComponent °¡ ÀÖ´ÂÁö Assert ÁøÇà */
-	check(PlayerInputComponent);
-
-	// Å°º¸µå ÀÔ·Â
+	
 	PlayerInputComponent->BindAxis("MoveForward", this, &ADSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADSCharacter::MoveRight);
-
-	// ¸¶¿ì½º ÀÔ·Â
 	PlayerInputComponent->BindAxis("Turn", this, &ADSCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ADSCharacter::LookUp);
-
-	// Gameped ¾Æ³¯·Î±× ½ºÆ½ ÀÔ·Â
-	PlayerInputComponent->BindAxis("TurnRate", this, &ADSCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &ADSCharacter::LookUpAtRate);
-
-	// Lock On ÀÔ·Â
 	PlayerInputComponent->BindAction("ToggleCameraLock", IE_Pressed, CameraLockArm, &ULockOnArmComponent::ToggleCameraLock);
 	PlayerInputComponent->BindAction("ToggleSoftLock", IE_Pressed, CameraLockArm, &ULockOnArmComponent::ToggleSoftLock);
 }
 
-// ÀüÈÄ ÀÔ·Â
+// ì „í›„ ì…ë ¥ LockOn / LockOff êµ¬ë¶„
 void ADSCharacter::MoveForward(float Val)
 {
 	if ((Controller != NULL) && (Val != .0f))
 	{
-		// ¾ÕµÚ ¾î´ÀÂÊ À¸·Î ÀÌµ¿ÇÏ´ÂÁö ¾Ë¾Æ³»±â(Lock On ÇÑ TargetÀÌ ¾øÀ¸¸é ControllerÀÇ ·ÎÅ×ÀÌ¼Ç°ª ¹İÈ¯ÇÏ°í, Å¸±êÀÌ ÀÖÀ¸¸é (Å¸±ê ·ÎÄÉÀÌ¼Ç - ³ªÀÇ ·ÎÄÉÀÌ¼Ç)AÀÇ Á¦°ö±ÙÀÇ ÇÕÀ» ±¸ÇÑÈÄ A¸¦ ¿ªÁ¦°ö±ÙÇÑ °ªÀ» 1·Î ³ª´©¾î ³ª¿Â°ªÀ» ´Ù½Ã A¿¡ °öÇÑÈÄ ·ÎÅ×ÀÌ¼Ç°ªÀ¸·Î º¯È¯ 
-		// ºí·çÇÁ¸°Æ® Get Unit Direction (vector) ¿¡ ÇØ´ç
+		// Lock Off = Controllerì˜ ë¡œí…Œì´ì…˜ê°’ ë°˜í™˜ / Lock On = (íƒ€ê¹ƒ ë¡œì¼€ì´ì…˜ - ë‚˜ì˜ ë¡œì¼€ì´ì…˜)Aì˜ ì œê³±ê·¼ì˜ í•©ì„ êµ¬í•œí›„ Aë¥¼ ì—­ì œê³±ê·¼í•œ ê°’ì„ 1ë¡œ ë‚˜ëˆ„ì–´ ë‚˜ì˜¨ê°’ì„ ë‹¤ì‹œ Aì— ê³±í•œí›„ ë¡œí…Œì´ì…˜ê°’ìœ¼ë¡œ ë³€í™˜ 
+		// ë¸”ë£¨í”„ë¦°íŠ¸ Get Unit Direction (vector) ì— í•´ë‹¹
 		const FRotator Rotation = CameraLockArm->CameraTarget == nullptr ? Controller->GetControlRotation() : (CameraLockArm->CameraTarget->GetOwner()->GetActorLocation() - GetActorLocation()).GetSafeNormal().Rotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// ¿ùµå ¶Ç´Â Å¸±êÀ¸·ÎºÎÅÍÀÇ forward vector ¾ò¾î¼­ ÀÎÇ²
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Val);
 	}
 }
 
-// ÁÂ¿ì ÀÔ·Â
+// ì¢Œìš° ì…ë ¥
 void ADSCharacter::MoveRight(float Val)
 {
 	if ((Controller != NULL) && (Val != 0.0f))
 	{
-		// ÁÂ¿ì ¾î´ÀÂÊ À¸·Î ÀÌµ¿ÇÏ´ÂÁö ¾Ë¾Æ³»±â
+		// Lock Off = Controllerì˜ ë¡œí…Œì´ì…˜ê°’ ë°˜í™˜ / Lock On = (íƒ€ê¹ƒ ë¡œì¼€ì´ì…˜ - ë‚˜ì˜ ë¡œì¼€ì´ì…˜)Aì˜ ì œê³±ê·¼ì˜ í•©ì„ êµ¬í•œí›„ Aë¥¼ ì—­ì œê³±ê·¼í•œ ê°’ì„ 1ë¡œ ë‚˜ëˆ„ì–´ ë‚˜ì˜¨ê°’ì„ ë‹¤ì‹œ Aì— ê³±í•œí›„ ë¡œí…Œì´ì…˜ê°’ìœ¼ë¡œ ë³€í™˜ 
 		const FRotator Rotation = CameraLockArm->CameraTarget == nullptr ? Controller->GetControlRotation() : (CameraLockArm->CameraTarget->GetOwner()->GetActorLocation() - GetActorLocation()).GetSafeNormal().Rotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// ¿ùµå ¶Ç´Â Å¸±êÀ¸·ÎºÎÅÍÀÇ right vector ¾ò¾î¼­ ÀÎÇ²
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Val);
 	}
 }
 
-// ¸¶¿ì½º XÃà ÀÔ·Â
+// ë§ˆìš°ìŠ¤ Xì¶• ì…ë ¥
 void ADSCharacter::Turn(float Val)
 {
 	float TimeSinceLastTargetSwitch = GetWorld()->GetRealTimeSeconds() - LastTargetSwitchTime;
-	//Lock On ½Ã
+	//Lock On ì‹œ
 	if (CameraLockArm->IsCameraLockedToTarget())
 	{
-		// Soft Lock On »óÅÂÀÏ¶§ Å¸±ê º¯°æ
-		if (CameraLockArm->bUseSoftLock && FMath::Abs(Val) > BreakLockMouseDelta) //Soft Lock On »óÅÂÀÌ°í ¸¶¿ì½º ¿òÁ÷ÀÓÀÌ BreakLockMouseDelta ÀÌ»óÀ¸·Î ¿òÁ÷ÀÌ¸é...
+		// Soft Lock On ìƒíƒœì¼ë•Œ íƒ€ê¹ƒ ë³€ê²½
+		if (CameraLockArm->bUseSoftLock && FMath::Abs(Val) > BreakLockMouseDelta) //Soft Lock On ìƒíƒœì´ê³  ë§ˆìš°ìŠ¤ ì›€ì§ì„ì´ BreakLockMouseDelta ì´ìƒìœ¼ë¡œ ì›€ì§ì´ë©´...
 		{
-			CameraLockArm->BreakTargetLock(); // ...BreakTargetLock ÇÔ¼ö¸¦ ½ÇÇàÇØ¶ó
-			BrokeLockTime = GetWorld()->GetRealTimeSeconds(); // Äğ´Ù¿îÀ» À§ÇÑ ½Ã°£ ÀúÀå
-			CameraLockArm->bSoftlockRequiresReset = true; // ¼ÒÇÁÆ®¶ô Àç¼³Á¤ ¿©ºÎ true 
+			CameraLockArm->BreakTargetLock(); // ...BreakTargetLock í•¨ìˆ˜ë¥¼ ì‹¤í–‰í•´ë¼
+			BrokeLockTime = GetWorld()->GetRealTimeSeconds(); // ì¿¨ë‹¤ìš´ì„ ìœ„í•œ ì‹œê°„ ì €ì¥
+			CameraLockArm->bSoftlockRequiresReset = true; // ì†Œí”„íŠ¸ë½ ì¬ì„¤ì • ì—¬ë¶€ true 
 		}
-		// Soft Lock Off »óÅÂÀÏ¶§
-		else if (FMath::Abs(Val) > TargetSwitchMouseDelta // Soft Lock Off »óÅÂÀÌ°í ¸¶¿ì½º ¿òÁ÷ÀÓÀÌ TargetSwitchMouseDelta ÀÌ»óÀ¸·Î ¿òÁ÷ÀÌ°í...
-			&& TimeSinceLastTargetSwitch > TargetSwitchMinDelaySeconds)	// ...½ºÀ§Äª ÄğÅ¸ÀÓÀÌ Áö³´À¸¸é ½ÇÇàÇØ¶ó
+		// Soft Lock Off ìƒíƒœì¼ë•Œ
+		else if (FMath::Abs(Val) > TargetSwitchMouseDelta // Soft Lock Off ìƒíƒœì´ê³  ë§ˆìš°ìŠ¤ ì›€ì§ì„ì´ TargetSwitchMouseDelta ì´ìƒìœ¼ë¡œ ì›€ì§ì´ê³ ...
+			&& TimeSinceLastTargetSwitch > TargetSwitchMinDelaySeconds)	// ...ìŠ¤ìœ„ì¹­ ì¿¨íƒ€ì„ì´ ì§€ë‚«ìœ¼ë©´ ì‹¤í–‰í•´ë¼
 		{
 			if (Val < 0)
 				CameraLockArm->SwitchTarget(EDirection::Left);
 			else
 				CameraLockArm->SwitchTarget(EDirection::Right);
 
-			LastTargetSwitchTime = GetWorld()->GetRealTimeSeconds(); // ½ºÀ§Äª ÄğÅ¸ÀÓ À§ÇÑ ½Ã°£ ÀúÀå
+			LastTargetSwitchTime = GetWorld()->GetRealTimeSeconds(); // ìŠ¤ìœ„ì¹­ ì¿¨íƒ€ì„ ìœ„í•œ ì‹œê°„ ì €ì¥
 		}
 	}
 	else
@@ -156,58 +126,27 @@ void ADSCharacter::Turn(float Val)
 	}
 }
 
-//¸¶¿ì½º YÃà ÀÔ·Â
+//ë§ˆìš°ìŠ¤ Yì¶• ì…ë ¥
 void ADSCharacter::LookUp(float Val)
 {
 	if (!CameraLockArm->IsCameraLockedToTarget())
 		AddControllerPitchInput(Val);
 }
 
-//Gameped XÃà ÀÔ·Â
-void ADSCharacter::TurnAtRate(float Val)
-{
-	// ¸¶Áö¸· Å¸±ê ½ºÀ§Ä¡ ½Ãµµ ÀÌÈÄ ¾Æ³¯·Î±× ½ºÆ½ÀÌ Áß¸³À¸·Î µ¹¾Æ °¬´ÂÁö È®ÀÎÇÊ¿ä
-	if (FMath::Abs(Val) < .1f)
-		bAnalogSettledSinceLastTargetSwitch = true;
-
-	if (CameraLockArm->IsCameraLockedToTarget() && (FMath::Abs(Val) > TargetSwitchAnalogValue) && bAnalogSettledSinceLastTargetSwitch)
-	{
-		if (Val < 0)
-			CameraLockArm->SwitchTarget(EDirection::Left);
-		else
-			CameraLockArm->SwitchTarget(EDirection::Right);
-
-		bAnalogSettledSinceLastTargetSwitch = false;
-	}
-	else
-	{
-		// calculate delta for this frame from the rate information
-		AddControllerYawInput(Val * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-	}
-}
-
-// Gameped YÃà ÀÔ·Â
-void ADSCharacter::LookUpAtRate(float Val)
-{
-	// calculate delta for this frame from the rate information
-	if (!CameraLockArm->IsCameraLockedToTarget())
-		AddControllerPitchInput(Val * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-// Lock On ½Ã Ä«¸Ş¶ó Á¦¾î
+// Lock On ì‹œ ì¹´ë©”ë¼ ì œì–´
 void ADSCharacter::TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction)
 {
 	Super::TickActor(DeltaTime, TickType, ThisTickFunction);
 
 	if (CameraLockArm->IsCameraLockedToTarget())
 	{
-		// ÇÃ·¹ÀÌ¾î¿¡¼­ Å¸°ÙÀ¸·Î Ä«¸Ş¶ó º¤ÅÍ ÀüÈ¯ÈÄ InterpTo ÅëÇÏ¿© easeinÀ¸·Î ÀÌµ¿... 
+		// í”Œë ˆì´ì–´ì—ì„œ íƒ€ê²Ÿìœ¼ë¡œ ì¹´ë©”ë¼ ë²¡í„° ì „í™˜í›„ InterpTo í†µí•˜ì—¬ easeinìœ¼ë¡œ ì´ë™... 
 		FVector TargetVect = CameraLockArm->CameraTarget->GetComponentLocation() - CameraLockArm->GetComponentLocation();
 		FRotator TargetRot = TargetVect.GetSafeNormal().Rotation();
 		FRotator CurrentRot = GetControlRotation();
-		FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, DeltaTime, LockonControlRotationRate);
+		FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, DeltaTime, LockOnControlRotationRate);
 
-		//... ÇÏ°í Ä«¸Ş¶ó º¤ÅÍ¸¦ Æ½À¸·Î °»½Å
+		//... í•˜ê³  ì¹´ë©”ë¼ ë²¡í„°ë¥¼ í‹±ìœ¼ë¡œ ê°±ì‹ 
 		GetController()->SetControlRotation(NewRot);
 	}
 }

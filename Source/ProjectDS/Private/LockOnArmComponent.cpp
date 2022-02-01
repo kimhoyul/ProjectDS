@@ -10,32 +10,32 @@
 
 ULockOnArmComponent::ULockOnArmComponent()
 {
-	MaxTargetLockDistance = 750.f;// Å¸°ÙÆÃ ÃÖÀå °Å¸® ¼³Á¤
-	bDrawDebug = true; // µğ¹ö±× ½ºÇÇ¾î »ı¼º¿©ºÎ
+	MaxTargetLockDistance = 750.f;// íƒ€ê²ŸíŒ… ìµœì¥ ê±°ë¦¬ ì„¤ì •
+	bDrawDebug = true; // ë””ë²„ê·¸ ìŠ¤í”¼ì–´ ìƒì„±ì—¬ë¶€
 
-	TargetArmLength = 300.0f; // ½ºÇÁ¸µ¾Ï ±æÀÌ	
-	bUsePawnControlRotation = true; // ÄÁÆ®·Ñ·¯ÀÇ È¸Àü°ª »ç¿ë¿©ºÎ
-	bEnableCameraLag = true; // ºÎµå·¯¿î Ä«¸Ş¶ó È¿°ú À§ÇÏ¿© Ä«¸Ş¶ó À§Ä¡·º »ç¿ë
-	bEnableCameraRotationLag = false; // Ä«¸Ş¶óÀÇ ·ÎÅ×ÀÌ¼Ç·º ¼³Á¤
-	CameraLagSpeed = 3.f; // Ä«¸Ş¶ó ·º ½ºÇÇµå ¼³Á¤
-	CameraRotationLagSpeed = 2.f; // Ä«¸Ş¶ó ·ÎÅ×ÀÌ¼Ç ·º ¼³Á¤
-	CameraLagMaxDistance = 100.f; // Ä«¸Ş¶ó ·ºÀ¸·Î ÀÎÇÑ ÃÖ´ë °Å¸® ¼³Á¤
+	TargetArmLength = 300.0f; // ìŠ¤í”„ë§ì•” ê¸¸ì´	
+	bUsePawnControlRotation = true; // ì»¨íŠ¸ë¡¤ëŸ¬ì˜ íšŒì „ê°’ ì‚¬ìš©ì—¬ë¶€
+	bEnableCameraLag = true; // ë¶€ë“œëŸ¬ìš´ ì¹´ë©”ë¼ íš¨ê³¼ ìœ„í•˜ì—¬ ì¹´ë©”ë¼ ìœ„ì¹˜ë ‰ ì‚¬ìš©
+	bEnableCameraRotationLag = false; // ì¹´ë©”ë¼ì˜ ë¡œí…Œì´ì…˜ë ‰ ì„¤ì •
+	CameraLagSpeed = 3.f; // ì¹´ë©”ë¼ ë ‰ ìŠ¤í”¼ë“œ ì„¤ì •
+	CameraRotationLagSpeed = 2.f; // ì¹´ë©”ë¼ ë¡œí…Œì´ì…˜ ë ‰ ì„¤ì •
+	CameraLagMaxDistance = 100.f; // ì¹´ë©”ë¼ ë ‰ìœ¼ë¡œ ì¸í•œ ìµœëŒ€ ê±°ë¦¬ ì„¤ì •
 }
 
 void ULockOnArmComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (IsCameraLockedToTarget()) // CameraTarget¿¡ Å¸°ÙÀÌ ¾øÀ¸¸é false, Å¸°ÙÀÖÀ¸¸é true
+	if (IsCameraLockedToTarget()) // CameraTargetì— íƒ€ê²Ÿì´ ì—†ìœ¼ë©´ false, íƒ€ê²Ÿìˆìœ¼ë©´ true
 	{
-		DrawDebugSphere(GetWorld(), CameraTarget->GetComponentLocation(), 20.f, 32, FColor::Red); // Å¸°ÙÀÌ ÀÖÀ¸¸é µğ¹ö±× ½ºÇÇ¾î¸¦ ±×·Á¶ó 20ÀÇ Å©±â·Î 32°³ÀÇ ¼±À» ÀÌ¿ëÇØ¼­ »¡°£»ö ¼±À¸·Î ±×·Á¶ó 
+		DrawDebugSphere(GetWorld(), CameraTarget->GetComponentLocation(), 20.f, 32, FColor::Red); // íƒ€ê²Ÿì´ ìˆìœ¼ë©´ ë””ë²„ê·¸ ìŠ¤í”¼ì–´ë¥¼ ê·¸ë ¤ë¼ 20ì˜ í¬ê¸°ë¡œ 32ê°œì˜ ì„ ì„ ì´ìš©í•´ì„œ ë¹¨ê°„ìƒ‰ ì„ ìœ¼ë¡œ ê·¸ë ¤ë¼ 
 
-		// Å¸°ÙÀÌ ÀÖÁö¸¸ MaxTargetLockDistance ÀÌ»ó ¹ú¾îÁö¸é BreakTargetLock ÇÔ¼ö È£Ãâ
+		// íƒ€ê²Ÿì´ ìˆì§€ë§Œ MaxTargetLockDistance ì´ìƒ ë²Œì–´ì§€ë©´ BreakTargetLock í•¨ìˆ˜ í˜¸ì¶œ
 		if ((CameraTarget->GetComponentLocation() - GetComponentLocation()).Size() > MaxTargetLockDistance + CameraTarget->GetScaledSphereRadius())
 		{
 			if (bUseSoftLock) 
 			{
-				// Å¸°ÙÀüÈ¯ À§ÇØ MaxTargetLockDistance ¿¡ ´Ù¸¥ Å¸°ÙÀÌ ÀÖ´ÂÁö È®ÀÎ
+				// íƒ€ê²Ÿì „í™˜ ìœ„í•´ MaxTargetLockDistance ì— ë‹¤ë¥¸ íƒ€ê²Ÿì´ ìˆëŠ”ì§€ í™•ì¸
 				if (ULockOnTargetComponent* NewCameraTarget = GetLockTarget())
 					LockToTarget(NewCameraTarget);
 				else
@@ -138,19 +138,22 @@ void ULockOnArmComponent::BreakTargetLock()
 	}
 }
 
+
 ULockOnTargetComponent* ULockOnArmComponent::GetLockTarget()
 {
-	TArray<ULockOnTargetComponent*> AvailableTargets = GetTargetComponents();
+	TArray<ULockOnTargetComponent*> AvailableTargets = GetTargetComponents(); 
 	if (AvailableTargets.Num() == 0)
 		return nullptr;
 
-	// Get the target with the smallest angle difference from the camera forward vector
+	// ì¹´ë©”ë¼ ForwardVector ì—ì„œ ê°ë„ ì°¨ì´ê°€ ê°€ì¥ ì ì€ ëŒ€ìƒ ê°€ì ¸ì˜¤ê¸°
 	float ClosestDotToCenter = 0.f;
 	ULockOnTargetComponent* TargetComponent = nullptr;
 
 	for (int32 i = 0; i < AvailableTargets.Num(); i++)
 	{
+		// Dot ì— ë‚´ì ê°’ ë„£ì–´ì£¼ê¸°
 		float Dot = FVector::DotProduct(GetForwardVector(), (AvailableTargets[i]->GetComponentLocation() - GetComponentLocation()).GetSafeNormal());
+		
 		if (Dot > ClosestDotToCenter)
 		{
 			ClosestDotToCenter = Dot;
@@ -160,15 +163,15 @@ ULockOnTargetComponent* ULockOnArmComponent::GetLockTarget()
 	return TargetComponent;
 }
 
-// SphereOverlapComponents ¸¦ ÁøÇàÇÏ±â À§ÇÑ ÇÔ¼ö
+// SphereOverlapComponents ë¥¼ ì§„í–‰í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 TArray<class ULockOnTargetComponent*> ULockOnArmComponent::GetTargetComponents()
 {
-	TArray<UPrimitiveComponent*> TargetPrims; // Å¸°ÙÀÌµÉ ÄÄÆÛ³ÍÆ®¸¦ ´ãÀ» ¹è¿­ »ı¼º
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { EObjectTypeQuery::ObjectTypeQuery2  }; // Äİ¸®Àü ÇÁ¸®¼Â -> ¿ÀºêÁ§Æ® ¹İÀÀ WorldDynamic) !!! ¿©±â¼­ Àû Å¸ÀÔ¿¡ µû¶ó º¯°æÇØÁà¾ß ÇÔ!!!!
+	TArray<UPrimitiveComponent*> TargetPrims; // íƒ€ê²Ÿì´ë  ì»´í¼ë„ŒíŠ¸ë¥¼ ë‹´ì„ ë°°ì—´ ìƒì„±
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { EObjectTypeQuery::ObjectTypeQuery2  }; // ì½œë¦¬ì „ í”„ë¦¬ì…‹ -> ì˜¤ë¸Œì íŠ¸ ë°˜ì‘ WorldDynamic) !!! ì—¬ê¸°ì„œ ì  íƒ€ì…ì— ë”°ë¼ ë³€ê²½í•´ì¤˜ì•¼ í•¨!!!!
 
-	// Å¸°Ù ¼³Á¤ °¡´ÉÇÑ ÄÄÆÛ³ÍÆ® Ã¼Å©
+	// íƒ€ê²Ÿ ì„¤ì • ê°€ëŠ¥í•œ ì»´í¼ë„ŒíŠ¸ ì²´í¬
 	UKismetSystemLibrary::SphereOverlapComponents(GetOwner(), GetComponentLocation(), MaxTargetLockDistance, ObjectTypes, ULockOnTargetComponent::StaticClass(), TArray<AActor*>{GetOwner()}, TargetPrims);
-	// 1. ³ªÀÚ½Å, 2. ³ªÀÚ½ÅÀÇ ·ÎÄÉÀÌ¼Ç, 3.ÁöÁ¤ÇØµĞ ÃÖ´ë°Å¸®, 4.¿ùµå´ÙÀÌ³ª¹Í À¸·Î ¼³Á¤, 5.Å¸°ÙÀ¸·Î ¸¸µé¾îµĞ ÄÄÆ÷³ÍÆ® Å¬·¡½º ÁöÁ¤, 6.³ªÀÚ½ÅÀ» ³Ö¾î ³ª´Â Á¦¿Ü, 7.À§¿¡ ¸¸µé¾îµĞ º¯¼ö¿¡ ÀÔ·Â
+	// 1. ë‚˜ìì‹ , 2. ë‚˜ìì‹ ì˜ ë¡œì¼€ì´ì…˜, 3.ì§€ì •í•´ë‘” ìµœëŒ€ê±°ë¦¬, 4.ì›”ë“œë‹¤ì´ë‚˜ë¯¹ ìœ¼ë¡œ ì„¤ì •, 5.íƒ€ê²Ÿìœ¼ë¡œ ë§Œë“¤ì–´ë‘” ì»´í¬ë„ŒíŠ¸ í´ë˜ìŠ¤ ì§€ì •, 6.ë‚˜ìì‹ ì„ ë„£ì–´ ë‚˜ëŠ” ì œì™¸, 7.ìœ„ì— ë§Œë“¤ì–´ë‘” ë³€ìˆ˜ì— ì…ë ¥
 	
 	TArray<ULockOnTargetComponent*> TargetComps; 
 	for (UPrimitiveComponent* Comp : TargetPrims)
