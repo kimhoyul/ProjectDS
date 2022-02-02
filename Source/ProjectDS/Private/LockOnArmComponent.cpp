@@ -115,7 +115,7 @@ void ULockOnArmComponent::ToggleSoftLock()
 	}
 	else
 	{
-		BreakTargetLock(); // 타겟있다면 해제 
+		BreakTargetLock();
 		print(TEXT("Soft-lock disabled"));
 	}
 }
@@ -124,6 +124,7 @@ void ULockOnArmComponent::LockToTarget(ULockOnTargetComponent* NewTargetComponen
 {
 	CameraTarget = NewTargetComponent;
 	bEnableCameraRotationLag = true;
+	//GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void ULockOnArmComponent::BreakTargetLock()
@@ -131,8 +132,9 @@ void ULockOnArmComponent::BreakTargetLock()
 	if (IsCameraLockedToTarget())
 	{
 		CameraTarget = nullptr;
-		//타켓락 풀어줄때 로테이션렉 풀어주지않으면 멀미남
+		//GetController()->SetControlRotation(FollowCamera->GetForwardVector().Rotation());
 		bEnableCameraRotationLag = false;
+		//GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
