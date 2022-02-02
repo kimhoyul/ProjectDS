@@ -163,7 +163,7 @@ ULockOnTargetComponent* ULockOnArmComponent::GetLockTarget()
 	return TargetComponent;
 }
 
-// SphereOverlapComponents 를 진행하기 위한 함수
+// 타겟팅 가능 범위내에서 타겟 확보
 TArray<class ULockOnTargetComponent*> ULockOnArmComponent::GetTargetComponents()
 {
 	TArray<UPrimitiveComponent*> TargetPrims; // 타겟이될 컴퍼넌트를 담을 배열 생성
@@ -187,36 +187,37 @@ bool ULockOnArmComponent::IsCameraLockedToTarget()
 	return CameraTarget != nullptr;
 }
 
+//LockOn 타겟 변경
 void ULockOnArmComponent::SwitchTarget(EDirection SwitchDirection)
 {
 	if (!IsCameraLockedToTarget()) return;
 
-	TArray<ULockOnTargetComponent*> AvailableTargets = GetTargetComponents();	// Get targets within lock-on range	
-	if (AvailableTargets.Num() < 2) return;	// Must have an existing camera target and 1 additional target
+	TArray<ULockOnTargetComponent*> AvailableTargets = GetTargetComponents();	// 타겟팅 가능 범위내에서 타겟 확보 
+	if (AvailableTargets.Num() < 2) return;	// 둘 이상의 타겟이 있는지 확인
 
-	FVector CurrentTargetDir = (CameraTarget->GetComponentLocation() - GetComponentLocation()).GetSafeNormal();
+	FVector CurrentTargetDir = (CameraTarget->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 타겟의 벡터구하기
 
 	TArray<ULockOnTargetComponent*> ViableTargets;
 
-	for (ULockOnTargetComponent* Target : AvailableTargets)
+	for (ULockOnTargetComponent* Target : AvailableTargets) // 범위기반루프 (배열 INDEX 기반 X , 배열 요소 값 O)
 	{
-		//  Don't consider current target as a switch target
+		//  현재 타겟은 건너뛰어라
 		if (Target == CameraTarget) continue;
 
-		FVector TargetDir = (Target->GetComponentLocation() - GetComponentLocation()).GetSafeNormal();
-		FVector Cross = FVector::CrossProduct(CurrentTargetDir, TargetDir);
+		FVector TargetDir = (Target->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 타겟의 벡터구하기
+		FVector Cross = FVector::CrossProduct(CurrentTargetDir, TargetDir); //외적 구하기
 
-		if ((SwitchDirection == EDirection::Left && Cross.Z < 0.f)	// Negative Z indicates left
-			|| (SwitchDirection == EDirection::Right && Cross.Z > 0.f))	// Positive Z indicates right
+		if ((SwitchDirection == EDirection::Left && Cross.Z < 0.f)	// Left로 들어왔고 외적이 플러스값이면 현재 대상보다 우측에 있기 때문에 추가 하지 않음 
+			|| (SwitchDirection == EDirection::Right && Cross.Z > 0.f))	// Right로 들어왔고 외적이 외적이 마이너스값이면 현재 대상보다 우측에 있기 때문에 추가 하지 않음
 		{
-			ViableTargets.AddUnique(Target);
+			ViableTargets.AddUnique(Target); // 겹치는 아이템 않음
 		}
 	}
 
-	if (ViableTargets.Num() == 0) return;
+	if (ViableTargets.Num() == 0) return; 
 
 	/*
-	Select the target with the smallest angle difference to the current target
+	추가된 값중에서 현재 대상과의 각도 차이가 가장 작은 대상을 선택.
 	*/
 	int32 BestDotIdx = 0;
 	for (int32 i = 1; i < ViableTargets.Num(); i++)

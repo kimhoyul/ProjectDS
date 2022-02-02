@@ -65,8 +65,8 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float Val);
 	void LookUp(float Val);
-	void ChangeL();
-	void UChangeL();
+	void ChangeLockOnLeft();
+	void ChangeLockOnRight();
 
 	bool IsChangeTarget;
 	
