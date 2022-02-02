@@ -66,6 +66,7 @@ void ADSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction("ToggleSoftLock", IE_Pressed, CameraLockArm, &ULockOnArmComponent::ToggleSoftLock);
 }	
 
+//왼쪽 방향키로 LockOn 타겟 변경
 void ADSCharacter::ChangeLockOnLeft()
 {
 	IsChangeTarget = true;
@@ -87,6 +88,7 @@ void ADSCharacter::ChangeLockOnLeft()
 	}
 }
 
+//오른쪽쪽 방향키로 LockOn 타겟 변경
 void ADSCharacter::ChangeLockOnRight()
 {
 	IsChangeTarget = true;
@@ -163,7 +165,7 @@ void ADSCharacter::Turn(float Val)
 	}
 	else
 	{
-		// If camera lock was recently broken by a large mouse delta, allow a cooldown time to prevent erratic camera movement
+		// 마우스 움직임으로 LockOn 해제된 경우 카메라의 불규칙한 움직임을 방지 위해 쿨다운 시간 적용
 		bool bRecentlyBrokeLock = (GetWorld()->GetRealTimeSeconds() - BrokeLockTime) < BrokeLockAimingCooldown;
 		if (!bRecentlyBrokeLock)
 			AddControllerYawInput(Val);
@@ -173,11 +175,10 @@ void ADSCharacter::Turn(float Val)
 //마우스 Y축 입력
 void ADSCharacter::LookUp(float Val)
 {
+	//LockOn상태이면 Y축값은 받지 않음
 	if (!CameraLockArm->IsCameraLockedToTarget())
 		AddControllerPitchInput(Val);
 }
-
-
 
 // Lock On 시 카메라 제어
 void ADSCharacter::TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction)
@@ -186,7 +187,7 @@ void ADSCharacter::TickActor(float DeltaTime, ELevelTick TickType, FActorTickFun
 
 	if (CameraLockArm->IsCameraLockedToTarget())
 	{
-		// 플레이어에서 타겟으로 카메라 벡터 전환후 InterpTo 통하여 easein으로 이동... 
+		// 플레이어에서 타겟으로 카메라 벡터 전환후 InterpTo 통하여 천천히 이동... 
 		FVector TargetVect = CameraLockArm->CameraTarget->GetComponentLocation() - CameraLockArm->GetComponentLocation();
 		FRotator TargetRot = TargetVect.GetSafeNormal().Rotation();
 		FRotator CurrentRot = GetControlRotation();
