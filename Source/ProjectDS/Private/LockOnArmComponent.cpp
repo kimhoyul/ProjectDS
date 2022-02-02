@@ -124,7 +124,6 @@ void ULockOnArmComponent::LockToTarget(ULockOnTargetComponent* NewTargetComponen
 {
 	CameraTarget = NewTargetComponent;
 	bEnableCameraRotationLag = true;
-	//GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void ULockOnArmComponent::BreakTargetLock()
@@ -132,9 +131,7 @@ void ULockOnArmComponent::BreakTargetLock()
 	if (IsCameraLockedToTarget())
 	{
 		CameraTarget = nullptr;
-		//GetController()->SetControlRotation(FollowCamera->GetForwardVector().Rotation());
 		bEnableCameraRotationLag = false;
-		//GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
