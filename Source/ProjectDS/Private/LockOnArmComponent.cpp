@@ -195,7 +195,7 @@ void ULockOnArmComponent::SwitchTarget(EDirection SwitchDirection)
 	TArray<ULockOnTargetComponent*> AvailableTargets = GetTargetComponents();	// 타겟팅 가능 범위내에서 타겟 확보 
 	if (AvailableTargets.Num() < 2) return;	// 둘 이상의 타겟이 있는지 확인
 
-	FVector CurrentTargetDir = (CameraTarget->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 타겟의 벡터구하기
+	FVector CurrentTargetDir = (CameraTarget->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 타겟의 방향구하기
 
 	TArray<ULockOnTargetComponent*> ViableTargets;
 
@@ -204,20 +204,21 @@ void ULockOnArmComponent::SwitchTarget(EDirection SwitchDirection)
 		//  현재 타겟은 건너뛰어라
 		if (Target == CameraTarget) continue;
 
-		FVector TargetDir = (Target->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 타겟의 벡터구하기
+		FVector TargetDir = (Target->GetComponentLocation() - GetComponentLocation()).GetSafeNormal(); // 배열내의 타겟들을 루프로 돌려서 방향 구하기
 		FVector Cross = FVector::CrossProduct(CurrentTargetDir, TargetDir); //외적 구하기
 
+		//언리얼은 왼손좌표계이다.
 		if ((SwitchDirection == EDirection::Left && Cross.Z < 0.f)	// Left로 들어왔고 외적이 플러스값이면 현재 대상보다 우측에 있기 때문에 추가 하지 않음 
 			|| (SwitchDirection == EDirection::Right && Cross.Z > 0.f))	// Right로 들어왔고 외적이 외적이 마이너스값이면 현재 대상보다 우측에 있기 때문에 추가 하지 않음
 		{
-			ViableTargets.AddUnique(Target); // 겹치는 아이템 않음
+			ViableTargets.AddUnique(Target); // 겹치는 않는 아이템만 저장
 		}
 	}
 
 	if (ViableTargets.Num() == 0) return; 
 
 	/*
-	추가된 값중에서 현재 대상과의 각도 차이가 가장 작은 대상을 선택.
+	추가된 값중에서 현재 대상과의 각도 차이가 가장 작은 대상을 선택. DotProduct = 각이 적을수록 내적의 값이 크다.
 	*/
 	int32 BestDotIdx = 0;
 	for (int32 i = 1; i < ViableTargets.Num(); i++)
